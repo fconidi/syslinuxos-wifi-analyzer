@@ -1,0 +1,19 @@
+[Desktop Entry]
+Type=Application
+Name=SysLinuxOS Wifi Analyzer
+GenericName=WiFi signal locator
+GenericName[it]=Localizzatore del segnale WiFi
+GenericName[fr]=Localisateur de signal WiFi
+GenericName[de]=WLAN-Signalortung
+GenericName[es]=Localizador de señal WiFi
+Comment=Find hidden access points with a signal gauge and audible feedback
+Comment[it]=Trova gli access point nascosti con tachimetro e guida sonora
+Comment[fr]=Trouvez les points d’accès cachés avec une jauge de signal et un guidage sonore
+Comment[de]=Versteckte Access Points mit Signalanzeige und akustischer Führung finden
+Comment[es]=Encuentra puntos de acceso ocultos con indicador de señal y guía sonora
+Exec=syslinuxos-wifi-analyzer
+Icon=syslinuxos-wifi-analyzer
+Terminal=false
+Categories=Network;
+Keywords=WiFi;wireless;signal;BSSID;access point;
+StartupNotify=true

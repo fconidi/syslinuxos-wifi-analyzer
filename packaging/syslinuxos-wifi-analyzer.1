@@ -1,0 +1,41 @@
+.TH SYSLINUXOS-WIFI-ANALYZER 1 "October 2026" "SysLinuxOS" "User Commands"
+.SH NAME
+syslinuxos-wifi-analyzer \- discover and locate WiFi access points
+.SH SYNOPSIS
+.B syslinuxos-wifi-analyzer
+.RB [ --demo ]
+.RB [ --version ]
+.SH DESCRIPTION
+Select a WiFi adapter and start scanning. Select a radio by its BSSID and open
+Segnale to track its frequency using a signal gauge, recent history and peak.
+Enable Bip attivo for audible feedback. Stronger received signal produces
+more frequent beeps. Sensitivity and volume are adjustable.
+.PP
+The GUI runs as the desktop user. A restricted helper requests authorization
+through polkit for iw scanning. No network service is started.
+.SH OPTIONS
+.TP
+.B --demo
+Display explicitly simulated observations without scanning or authorization.
+.TP
+.B --version
+Print the application version and exit.
+.SH LIMITATIONS
+RSSI is not distance or direction. Reflections and metal structures can move
+the strongest reception point. Walk slowly and cross the candidate area from
+two directions while keeping receiver height and orientation constant.
+.PP
+Missing or stale samples and scan errors suspend audible feedback.
+.SH FILES
+.I /usr/share/doc/syslinuxos-wifi-analyzer/
+.SH AUTHOR
+Franco Conidi. BSS parsing adapted from Sparrow WiFi by ghostop14.
+.SH LICENSE
+GNU GPL version 3 or later.
+
+.SH LANGUAGE
+The interface detects the desktop message locale using LC_ALL, LC_MESSAGES,
+and LANG. LANGUAGE may supply a colon-separated preference list.
+English is the default fallback; Italian, French, German and Spanish are
+supported, including regional locale variants. C and POSIX select English.
+Restart the application after changing the session language.

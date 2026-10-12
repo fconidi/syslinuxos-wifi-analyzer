@@ -1,0 +1,24 @@
+syslinuxos-wifi-analyzer (2026.10.3) tirreno; urgency=medium
+
+  * Correct the application name to SysLinuxOS Wifi Analyzer.
+  * Rename the command, installed paths, desktop entries and polkit action.
+  * Replace the previous package with the misspelled name on installation.
+
+ -- Franco Conidi <fconidi@gmail.com>  Mon, 12 Oct 2026 17:00:00 +0200
+
+syslinuxos-wify-analyzer (2026.10.2) tirreno; urgency=medium
+
+  * Detect the desktop message language with English as the default fallback.
+  * Translate the interface, diagnostics and accessibility into IT, FR, DE, ES.
+  * Localize desktop entries and polkit authentication prompts.
+
+ -- Franco Conidi <fconidi@gmail.com>  Mon, 12 Oct 2026 16:00:00 +0200
+
+syslinuxos-wify-analyzer (2026.10.1) tirreno; urgency=medium
+
+  * Initial SysLinuxOS WiFi discovery and access point locator.
+  * Add BSSID-specific Segnale gauge, history, peak and audible feedback.
+  * Keep desktop audio unprivileged; authorize the restricted iw scan helper.
+  * Add explicit demo mode and regression tests for stale signals and shutdown.
+
+ -- Franco Conidi <fconidi@gmail.com>  Mon, 12 Oct 2026 15:00:00 +0200

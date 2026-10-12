@@ -1,0 +1,5 @@
+*.deb
+staging/
+__pycache__/
+*.pyc
+.pytest_cache/

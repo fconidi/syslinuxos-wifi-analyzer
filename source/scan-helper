@@ -1,0 +1,11 @@
+#!/usr/bin/python3 -I
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Installed root-owned at the fixed path named by the polkit policy.
+# Isolated Python ignores PYTHONPATH and the user site, including for root.
+import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
+from scanner import helper_main
+
+sys.exit(helper_main())

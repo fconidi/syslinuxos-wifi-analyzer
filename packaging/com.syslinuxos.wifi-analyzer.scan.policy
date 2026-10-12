@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE policyconfig PUBLIC "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/PolicyKit/1/policyconfig.dtd">
+<policyconfig>
+  <vendor>SysLinuxOS</vendor>
+  <vendor_url>https://syslinuxos.com/</vendor_url>
+  <action id="com.syslinuxos.wifi-analyzer.scan">
+    <description>Scan WiFi access points</description>
+    <description xml:lang="it">Scansione degli access point WiFi</description>
+    <description xml:lang="fr">Scanner les points d’accès WiFi</description>
+    <description xml:lang="de">WLAN-Access-Points scannen</description>
+    <description xml:lang="es">Escanear puntos de acceso WiFi</description>
+    <message>Authentication is required to scan WiFi with SysLinuxOS Wifi Analyzer</message>
+    <message xml:lang="it">Autenticazione richiesta per la scansione WiFi con SysLinuxOS Wifi Analyzer</message>
+    <message xml:lang="fr">Authentification requise pour scanner le WiFi avec SysLinuxOS Wifi Analyzer</message>
+    <message xml:lang="de">Authentifizierung für den WLAN-Scan mit SysLinuxOS Wifi Analyzer erforderlich</message>
+    <message xml:lang="es">Se requiere autenticación para escanear WiFi con SysLinuxOS Wifi Analyzer</message>
+    <icon_name>syslinuxos-wifi-analyzer</icon_name>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/lib/syslinuxos-wifi-analyzer/scan-helper</annotate>
+  </action>
+</policyconfig>
