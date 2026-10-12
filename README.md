@@ -11,6 +11,8 @@ ceilings or in other concealed areas, using received signal strength and audible
 guidance. Version `2026.10.3`, for SysLinuxOS 13 / Debian 13. English is the
 default language, with automatic support for Italian, French, German and Spanish.
 
+Full walkthrough: [installation and usage guide](https://syslinuxos.com/syslinuxos-wifi-analyzer-installation-usage-guide/).
+
 ### Installation and launch
 
 With the [SysLinuxOS Tools APT repository](https://github.com/fconidi/SysLinuxOS-Tools) configured:
@@ -157,6 +159,8 @@ Applicazione desktop per trovare gli access point nascosti, ad esempio sopra un
 controsoffitto, usando il segnale ricevuto e una guida sonora. Versione
 `2026.10.3`, per SysLinuxOS 13 / Debian 13. Inglese predefinito con rilevamento
 automatico di italiano, francese, tedesco e spagnolo.
+
+Guida completa: [installazione e utilizzo](https://francoconidi.it/syslinuxos-wifi-analyzer-guida-installazione-utilizzo/).
 
 ### Installazione e avvio
 
