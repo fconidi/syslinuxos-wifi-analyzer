@@ -117,33 +117,6 @@ python3 source/app.py --demo
 signal changes. It does not run `iw` or request privileges and lets you try the
 gauge, filters and audio.
 
-### Development and verification
-
-```bash
-sudo apt install python3 python3-pyqt5 python3-pyqt5.qtmultimedia iw pkexec \
-    dpkg-dev desktop-file-utils
-python3 -m unittest discover -s tests -v
-bash build-deb.sh
-```
-
-The build runs tests, validates desktop/XML files and generates a `.deb` with
-root ownership for installed files. The version is defined in `source/VERSION`.
-
-Automated tests cover BSS parsing, fractional dBm, shared/hidden SSIDs, cache age,
-target selection, smoothing, expiry, beep cadence, privileged input validation,
-errors/timeouts and the Qt demo lifecycle. The backend uses fixed paths and
-argument lists without a shell. The helper is isolated from `PYTHONPATH` and
-user-site packages; its policy authorizes only the installed executable path.
-
-Field acceptance checks before public distribution:
-
-- polkit authentication, stopping and closing during a real scan;
-- detecting two APs sharing an SSID on 2.4 and 5 GHz;
-- audio through speakers/headphones in MATE or GNOME;
-- switching off the AP: beeps pause and the gauge clears;
-- walking under a known AP and repeating from two directions;
-- adapter behavior while NetworkManager maintains a connection.
-
 ### Origin and license
 
 Copyright 2026 Franco Conidi. GPL-3.0-or-later; no warranty.
@@ -263,33 +236,6 @@ python3 source/app.py --demo
 La modalità **DIMOSTRAZIONE** mostra due radio con lo stesso SSID, un SSID nascosto
 e variazioni sintetiche di intensità. Non esegue `iw`, non chiede privilegi e
 consente di provare tachimetro, filtri e audio.
-
-### Sviluppo e verifica
-
-```bash
-sudo apt install python3 python3-pyqt5 python3-pyqt5.qtmultimedia iw pkexec \
-    dpkg-dev desktop-file-utils
-python3 -m unittest discover -s tests -v
-bash build-deb.sh
-```
-
-La build esegue i test, valida desktop/XML e genera il `.deb` con proprietario
-root per i file installati. Versione unica in `source/VERSION`.
-
-Test automatici: parser BSS, dBm frazionari, SSID uguali/nascosti, età della cache,
-bersaglio, smoothing, scadenza, cadenza, input privilegiati, errori/timeout e
-lifecycle Qt della modalità demo. Il backend usa percorsi fissi e liste di
-argomenti, senza shell. L’helper è isolato da `PYTHONPATH` e user-site; la policy
-autorizza soltanto il percorso installato, non i sorgenti modificabili.
-
-Accettazione sul campo da eseguire prima della distribuzione pubblica:
-
-- autenticazione polkit, stop e chiusura durante una scansione reale;
-- rilevamento di due AP con stesso SSID su 2,4 e 5 GHz;
-- audio da altoparlanti/cuffie nella sessione MATE o GNOME;
-- spegnimento dell’AP: bip sospeso e indicatore senza valore;
-- passeggiata sotto un AP noto, con ripetizione da due direzioni;
-- comportamento della scheda mentre NetworkManager mantiene una connessione.
 
 ### Origine e licenza
 

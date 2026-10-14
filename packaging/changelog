@@ -19,6 +19,6 @@ syslinuxos-wify-analyzer (2026.10.1) tirreno; urgency=medium
   * Initial SysLinuxOS WiFi discovery and access point locator.
   * Add BSSID-specific Segnale gauge, history, peak and audible feedback.
   * Keep desktop audio unprivileged; authorize the restricted iw scan helper.
-  * Add explicit demo mode and regression tests for stale signals and shutdown.
+  * Add explicit demo mode and improve stale-signal and shutdown handling.
 
  -- Franco Conidi <fconidi@gmail.com>  Mon, 12 Oct 2026 15:00:00 +0200
