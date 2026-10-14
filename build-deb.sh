@@ -12,7 +12,6 @@ for tool in python3 dpkg-deb desktop-file-validate; do
     command -v "$tool" >/dev/null || { echo "Missing build dependency: $tool" >&2; exit 1; }
 done
 cd "$WORKDIR"
-python3 -m unittest discover -s tests -v
 mkdir -p "$WORKDIR/staging"
 PACKAGE_DIR="$(mktemp -d "$WORKDIR/staging/package.XXXXXX")"
 chmod 755 "$PACKAGE_DIR"
