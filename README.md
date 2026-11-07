@@ -8,7 +8,7 @@
 
 Desktop application for locating WiFi access points hidden above suspended
 ceilings or in other concealed areas, using received signal strength and audible
-guidance. Version `2026.10.3`, for SysLinuxOS 13 / Debian 13. English is the
+guidance. Version `2026.11.1`, for SysLinuxOS 13 / Debian 13. English is the
 default language, with automatic support for Italian, French, German and Spanish.
 
 Full walkthrough: [installation and usage guide](https://syslinuxos.com/syslinuxos-wifi-analyzer-installation-usage-guide/).
@@ -25,7 +25,7 @@ sudo apt install syslinuxos-wifi-analyzer
 Or download the `.deb` from [GitHub Releases](https://github.com/fconidi/syslinuxos-wifi-analyzer/releases):
 
 ```bash
-sudo apt install ./syslinuxos-wifi-analyzer_2026.10.3_all.deb
+sudo apt install ./syslinuxos-wifi-analyzer_2026.11.1_all.deb
 syslinuxos-wifi-analyzer
 ```
 
@@ -100,7 +100,10 @@ correct individual panel.
   steadier scanning while the main adapter maintains a connection.
 - Scanning speed depends on the adapter, driver and channel. Scans lasting more
   than four seconds may interrupt audible guidance. Each `iw` invocation times
-  out after 15 seconds; stopping or closing may wait for that timeout.
+  out after 15 seconds; a scan in progress finishes by itself after you stop or
+  close the window, which does not wait for it. Discovery scans run about once a
+  second to spare the connection of the adapter; scans that give up after ten
+  consecutive failures stop the session with the last error.
 - If the AP changes channel, close Signal and find it again in the updated list.
 - The authentication prompt appears when starting a scanning session, rather
   than for each beep or sample. Cancelling authentication stops the session.
@@ -130,7 +133,7 @@ on WiFi discovery and does not include Sparrow's Bluetooth, SDR or DroneID featu
 
 Applicazione desktop per trovare gli access point nascosti, ad esempio sopra un
 controsoffitto, usando il segnale ricevuto e una guida sonora. Versione
-`2026.10.3`, per SysLinuxOS 13 / Debian 13. Inglese predefinito con rilevamento
+`2026.11.1`, per SysLinuxOS 13 / Debian 13. Inglese predefinito con rilevamento
 automatico di italiano, francese, tedesco e spagnolo.
 
 Guida completa: [installazione e utilizzo](https://francoconidi.it/syslinuxos-wifi-analyzer-guida-installazione-utilizzo/).
@@ -147,7 +150,7 @@ sudo apt install syslinuxos-wifi-analyzer
 Oppure scarica il `.deb` dalle [release GitHub](https://github.com/fconidi/syslinuxos-wifi-analyzer/releases):
 
 ```bash
-sudo apt install ./syslinuxos-wifi-analyzer_2026.10.3_all.deb
+sudo apt install ./syslinuxos-wifi-analyzer_2026.11.1_all.deb
 syslinuxos-wifi-analyzer
 ```
 
@@ -220,7 +223,7 @@ l’area in cui aprire il controsoffitto, non garantisce il singolo pannello.
   più regolare quando il ricevitore principale mantiene la connessione.
 - La velocità dipende da scheda, driver e canale. Scansioni superiori a quattro
   secondi possono produrre pause nella guida sonora. Ogni invocazione di `iw`
-  scade dopo 15 secondi. Lo stop o la chiusura possono attendere quella scadenza.
+  scade dopo 15 secondi; una scansione in corso termina da sola dopo lo stop o la chiusura, senza far attendere la finestra. La ricerca su tutti i canali procede circa una volta al secondo; dopo dieci errori consecutivi la sessione si ferma con l’ultimo errore.
 - Se l’AP cambia canale, chiudi Segnale e ritrovalo nell’elenco aggiornato.
 - Il popup amministrativo compare all’avvio della sessione di scansione, non a
   ogni bip o campione. Annullare l’autenticazione interrompe la sessione.

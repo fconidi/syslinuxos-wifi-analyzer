@@ -34,6 +34,8 @@ def channel_for_frequency(frequency):
         return 14
     if 2412 <= frequency <= 2472:
         return (frequency - 2407) // 5
+    if 4900 <= frequency < 5000:
+        return (frequency - 4000) // 5
     if frequency == 5935:
         return 2
     if 5955 <= frequency <= 7115:
@@ -43,27 +45,51 @@ def channel_for_frequency(frequency):
     return 0
 
 
+def decode_ssid(text):
+    """Undo iw's escaping (\\xNN, \\\\) and return printable text; an unset SSID is ''."""
+    raw = bytearray()
+    index = 0
+    while index < len(text):
+        if text.startswith('\\x', index) and re.fullmatch(r'[0-9a-fA-F]{2}', text[index + 2:index + 4]):
+            raw.append(int(text[index + 2:index + 4], 16))
+            index += 4
+        elif text.startswith('\\\\', index):
+            raw.append(0x5c)
+            index += 2
+        else:
+            raw += text[index].encode('utf-8', 'replace')
+            index += 1
+    ssid = raw.decode('utf-8', 'replace')
+    if not ssid.strip('\x00'):
+        return ''
+    return ''.join(char if char.isprintable() else '?' for char in ssid)[:128]
+
+
 def parse_iw(output):
     """Parse complete BSS blocks, keeping hidden SSIDs and fractional dBm.
 
     A missing last-seen field is accepted as age zero after a successful fresh
     scan. Known cache ages are always retained, never turned into new samples.
+    Ages are relative to the helper's scan time, so the GUI turns them into its
+    own clock (time.monotonic is system-wide on Linux and shared by both).
     """
     networks = []
     current = None
+    section = None
     for line in output.splitlines() + ['BSS end']:
         if line.startswith('BSS '):
             if current and 'frequency' in current and 'signal' in current:
                 networks.append(Network(**current))
             match = re.match(r'BSS ([0-9a-fA-F]{2}(?::[0-9a-fA-F]{2}){5})(?:\s|\()', line)
             current = {'bssid': match[1].lower(), 'ssid': ''} if match else None
+            section = None
             continue
         if current is None:
             continue
         field = line.strip()
         if field.startswith('SSID:'):
             # SSIDs are untrusted text; the UI renders them as plain text.
-            current['ssid'] = field[5:].lstrip()[:128]
+            current['ssid'] = decode_ssid(field[5:].lstrip())
         elif match := re.fullmatch(r'freq:\s*(\d+)(?:\.0+)?', field):
             current['frequency'] = int(match[1])
         elif match := re.fullmatch(r'signal:\s*(-?\d+(?:\.\d+)?) dBm', field):
@@ -74,8 +100,19 @@ def parse_iw(output):
             current['age'] = int(match[1]) / 1000
         elif field.startswith('RSN:'):
             current['security'] = 'WPA2/3'
-        elif field.startswith('WPA:') and current.get('security') != 'WPA2/3':
-            current['security'] = 'WPA'
+            section = 'rsn'
+        elif field.startswith('WPA:'):
+            section = 'wpa'
+            if current.get('security') not in ('WPA2/3', 'WPA2', 'WPA3', 'OWE'):
+                current['security'] = 'WPA'
+        elif section == 'rsn' and (match := re.match(r'\*?\s*Authentication suites:\s*(.*)', field)):
+            suites = set(match[1].split())
+            if suites == {'OWE'}:
+                current['security'] = 'OWE'
+            elif 'SAE' in suites and 'PSK' not in suites:
+                current['security'] = 'WPA3'
+            elif 'PSK' in suites and 'SAE' not in suites:
+                current['security'] = 'WPA2'
         elif field.startswith('capability:') and 'Privacy' in field:
             current.setdefault('security', 'WEP/Privacy')
     return networks

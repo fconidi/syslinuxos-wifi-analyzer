@@ -29,6 +29,8 @@ class ScanController(QObject):
         self.frequency = 0
         self.step = 0
         self.buffer = b''
+        self.helper_started = False
+        self.reported = False
         self.process = QProcess(self)
         self.process.readyReadStandardOutput.connect(self.read_output)
         self.process.finished.connect(self.finished)
@@ -41,6 +43,8 @@ class ScanController(QObject):
         if self.running:
             return
         self.stopping = False
+        self.helper_started = False
+        self.reported = False
         self.frequency = 0
         self.buffer = b''
         if not self.demo and not Path(HELPER).is_file():
@@ -65,6 +69,9 @@ class ScanController(QObject):
             self.timer.stop()
             self.finished(0, QProcess.NormalExit)
         elif self.process.state() != QProcess.NotRunning:
+            if not self.helper_started:
+                # Still waiting for the authorization dialog: closing the pipe would not end it.
+                self.process.terminate()
             self.process.write(b'{"stop":true}\n')
             self.process.closeWriteChannel()
         else:
@@ -73,18 +80,24 @@ class ScanController(QObject):
     def shutdown(self):
         self.stop()
         if self.process.state() != QProcess.NotRunning:
-            # iw has a 15-second timeout; EOF then ends the authorized helper.
-            if not self.process.waitForFinished(16000):
-                self.process.kill()
-                self.process.waitForFinished(1000)
+            # EOF on its input ends the authorized helper by itself (an iw run in
+            # progress finishes within 15 seconds). The root process cannot be
+            # killed from here, so only wait briefly and never freeze the window.
+            self.process.waitForFinished(1500)
 
     def finished(self, code, status):
         was_running = self.running
         self.running = False
         if was_running:
             self.changed.emit(False)
-        if not self.stopping and code:
-            self.problem.emit(tr('Scan ended. Authorization cancelled or helper unavailable.'))
+        if not self.stopping and code and not self.reported:
+            if code == 126:
+                message = tr('Authorization cancelled.')
+            elif code == 127:
+                message = tr('Authorization failed. Check that a polkit authentication agent is running.')
+            else:
+                message = tr('Scan ended. Authorization cancelled or helper unavailable.')
+            self.problem.emit(message)
 
     def process_error(self, error):
         if error == QProcess.FailedToStart:
@@ -109,10 +122,12 @@ class ScanController(QObject):
     def deliver(self, event):
         if self.stopping:
             return
+        self.helper_started = True
         if event['type'] == 'error':
+            self.reported = True
             self.problem.emit(scan_message(event['message']))
         elif event['type'] == 'scan':
-            networks = [Network(**item) for item in event['networks']]
+            networks = [Network(**item) for item in event['networks'][:500]]
             self.scanned.emit(networks, event['time'], event['frequency'])
 
     def demo_scan(self):

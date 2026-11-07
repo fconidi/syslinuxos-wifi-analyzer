@@ -35,7 +35,7 @@ class LocaleTests(unittest.TestCase):
 
     def test_translation_and_formatting_follow_session(self):
         for language, expected in [('en', '&Start scan'), ('it', '&Avvia scansione'),
-                                   ('fr', '&Démarrer le scan'), ('de', '&Scan starten'),
+                                   ('fr', '&Démarrer le scan'), ('de', 'Scan s&tarten'),
                                    ('es', '&Iniciar escaneo')]:
             with patch.dict(os.environ, {'LANG': language}, clear=True):
                 self.assertEqual(tr('&Start scan'), expected)
@@ -55,6 +55,18 @@ class LocaleTests(unittest.TestCase):
                         and node.func.id == 'tr' and node.args
                         and isinstance(node.args[0], ast.Constant)):
                     self.assertIn(node.args[0].value, TRANSLATIONS, str(path))
+
+    def test_keyboard_shortcuts_do_not_clash_in_any_language(self):
+        windows = [['&WiFi adapter:', '&Start scan', 'Si&gnal…'],
+                   ['&WiFi adapter:', 'S&top scan', 'Si&gnal…'],
+                   ['&Sensitivity:', '&Enable beeps', '&Volume:', '&Close Signal']]
+        for index, language in enumerate(SUPPORTED):
+            for keys in windows:
+                marks = []
+                for key in keys:
+                    text = key if index == 0 else TRANSLATIONS[key][index - 1]
+                    marks.append(text[text.index('&') + 1].lower())
+                self.assertEqual(len(marks), len(set(marks)), (language, keys, marks))
 
     def test_backend_error_is_translated_without_formatting_raw_diagnostics(self):
         with patch.dict(os.environ, {'LANG': 'fr_FR'}, clear=True):

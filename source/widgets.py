@@ -5,7 +5,7 @@ from i18n import tr
 import math
 
 from PyQt5.QtCore import QPointF, QRectF, Qt
-from PyQt5.QtGui import QColor, QFont, QPainter, QPen, QPolygonF
+from PyQt5.QtGui import QColor, QFont, QFontMetrics, QPainter, QPen, QPolygonF
 from PyQt5.QtWidgets import QWidget
 
 
@@ -22,6 +22,7 @@ class SignalGauge(QWidget):
         self.weak = -90
         self.strong = -40
         self.setMinimumSize(300, 230)
+        self.setFocusPolicy(Qt.TabFocus)
         self.setAccessibleName(tr('WiFi signal gauge'))
 
     def set_value(self, value, weak, strong):
@@ -40,8 +41,12 @@ class SignalGauge(QWidget):
             painter.setPen(QPen(QColor(color), 9, Qt.SolidLine, Qt.FlatCap))
             painter.drawArc(arc, start * 16, span * 16)
         font = QFont(self.font())
-        font.setPointSize(10)
+        base = self.font().pointSizeF()
+        base = base if base > 0 else 10.0
+        font.setPointSizeF(base)
         painter.setFont(font)
+        metrics = QFontMetrics(font)
+        label_w, label_h = metrics.horizontalAdvance('-000') + 10, metrics.height() + 4
         for index in range(6):
             angle = math.radians(210 - 240 * index / 5)
             outer = QPointF(center.x() + math.cos(angle) * (radius - 13), center.y() - math.sin(angle) * (radius - 13))
@@ -51,7 +56,7 @@ class SignalGauge(QWidget):
             label = str(round(self.weak + (self.strong - self.weak) * index / 5))
             pos = QPointF(center.x() + math.cos(angle) * (radius - 40), center.y() - math.sin(angle) * (radius - 40))
             painter.setPen(INK)
-            painter.drawText(QRectF(pos.x() - 20, pos.y() - 10, 40, 20), Qt.AlignCenter, label)
+            painter.drawText(QRectF(pos.x() - label_w / 2, pos.y() - label_h / 2, label_w, label_h), Qt.AlignCenter, label)
         if self.value is not None:
             strength = max(0, min(1, (self.value - self.weak) / (self.strong - self.weak)))
             angle = math.radians(210 - 240 * strength)
@@ -61,17 +66,18 @@ class SignalGauge(QWidget):
             painter.setBrush(ACCENT)
             painter.drawPolygon(QPolygonF([center + side, tip, center - side]))
             painter.drawEllipse(center, 8, 8)
-        font.setPointSize(26)
+        font.setPointSizeF(base * 2.6)
         font.setBold(True)
         painter.setFont(font)
         painter.setPen(INK)
+        big = QFontMetrics(font).height() + 6
         text = '—' if self.value is None else f'{self.value:.1f}'
-        painter.drawText(QRectF(0, center.y() + 19, self.width(), 42), Qt.AlignCenter, text)
-        font.setPointSize(10)
+        painter.drawText(QRectF(0, center.y() + 19, self.width(), big), Qt.AlignCenter, text)
+        font.setPointSizeF(base)
         font.setBold(False)
         painter.setFont(font)
         painter.setPen(MUTED)
-        painter.drawText(QRectF(0, center.y() + 60, self.width(), 24), Qt.AlignCenter, tr('dBm · received signal strength'))
+        painter.drawText(QRectF(0, center.y() + 19 + big, self.width(), label_h + 4), Qt.AlignCenter, tr('dBm · received signal strength'))
         painter.end()
 
 
@@ -79,7 +85,10 @@ class SignalHistory(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.points = []
+        self.now = None
+        self.weak, self.strong = -90, -40
         self.setMinimumHeight(110)
+        self.setFocusPolicy(Qt.TabFocus)
         self.setAccessibleName(tr('Recent signal history'))
 
     def paintEvent(self, event):
@@ -87,20 +96,22 @@ class SignalHistory(QWidget):
         painter.setRenderHint(QPainter.Antialiasing)
         painter.fillRect(self.rect(), BACKGROUND)
         plot = QRectF(42, 12, self.width() - 54, self.height() - 32)
-        for value in [-90, -60, -30]:
-            y = plot.bottom() - (value + 100) / 80 * plot.height()
+        low, high = self.weak - 10, self.strong + 10
+        for value in [self.weak, round((self.weak + self.strong) / 2), self.strong]:
+            y = plot.bottom() - (value - low) / (high - low) * plot.height()
             painter.setPen(QPen(QColor('#304959'), 1))
             painter.drawLine(QPointF(plot.left(), y), QPointF(plot.right(), y))
             painter.setPen(MUTED)
             painter.drawText(QRectF(2, y - 8, 34, 16), Qt.AlignRight, str(value))
         if self.points:
-            end = self.points[-1][0]
+            # The window slides with the clock: a lost signal scrolls away instead of freezing.
+            end = self.now if self.now is not None else self.points[-1][0]
             previous = None
             for timestamp, signal in self.points:
                 if timestamp < end - 60:
                     continue
                 point = QPointF(plot.right() - (end - timestamp) / 60 * plot.width(),
-                                plot.bottom() - max(0, min(80, signal + 100)) / 80 * plot.height())
+                                plot.bottom() - max(0, min(high - low, signal - low)) / (high - low) * plot.height())
                 painter.setPen(QPen(ACCENT, 2))
                 if previous is not None and timestamp - previous[0] < 4:
                     painter.drawLine(previous[1], point)

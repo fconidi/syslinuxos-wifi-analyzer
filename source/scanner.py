@@ -13,6 +13,12 @@ from core import parse_iw
 
 
 IW = '/usr/sbin/iw'
+MAX_NETWORKS = 500          # a beacon flood must not overwhelm the UI
+MAX_IW_OUTPUT = 2_000_000
+MAX_ERRORS = 10             # consecutive failures before the session gives up
+ERROR_DELAY = 1.5
+DISCOVERY_DELAY = 1.0
+LOCKED_DELAY = 0.5
 
 
 def validate_interface(interface):
@@ -37,7 +43,7 @@ def scan_command(interface, frequency):
 def parse_command(line):
     try:
         command = json.loads(line)
-    except (json.JSONDecodeError, UnicodeDecodeError) as exc:
+    except (json.JSONDecodeError, UnicodeDecodeError, RecursionError) as exc:
         raise ValueError('Invalid command') from exc
     if command == {'stop': True}:
         return 'stop'
@@ -46,13 +52,17 @@ def parse_command(line):
     return validate_frequency(command['frequency'])
 
 
+def parse_interfaces(output):
+    return re.findall(r'^\s*Interface ([a-zA-Z0-9][a-zA-Z0-9_.-]{0,14})\s*$', output, re.M)
+
+
 def wireless_interfaces():
     try:
         result = subprocess.run([IW, 'dev'], capture_output=True, text=True, timeout=5,
                                 env={'PATH': '/usr/sbin:/usr/bin', 'LC_ALL': 'C'})
     except (OSError, subprocess.TimeoutExpired):
         return []
-    return re.findall(r'^\s*Interface ([a-zA-Z0-9][a-zA-Z0-9_.-]{0,14})\s*$', result.stdout, re.M)
+    return parse_interfaces(result.stdout)
 
 
 def scan_once(interface, frequency):
@@ -74,8 +84,9 @@ def scan_once(interface, frequency):
         else:
             message = 'Scan failed: ' + details
         return {'type': 'error', 'message': message}
+    networks = sorted(parse_iw(result.stdout[:MAX_IW_OUTPUT]), key=lambda net: -net.signal)
     return {'type': 'scan', 'frequency': frequency, 'time': time.monotonic(),
-            'networks': [asdict(net) for net in parse_iw(result.stdout)]}
+            'networks': [asdict(net) for net in networks[:MAX_NETWORKS]]}
 
 
 def emit(event):
@@ -97,6 +108,7 @@ def helper_main():
             raise ValueError('WiFi interface unavailable')
         frequency = 0
         buffer = b''
+        errors = 0
         next_scan = time.monotonic()
         while True:
             wait = max(0.0, next_scan - time.monotonic())
@@ -117,7 +129,16 @@ def helper_main():
             if time.monotonic() >= next_scan:
                 event = scan_once(interface, frequency)
                 emit(event)
-                next_scan = time.monotonic() + (1.5 if event['type'] == 'error' else 0.5)
+                if event['type'] == 'error':
+                    # Busy adapters recover; permanent failures must not loop forever.
+                    errors = 0 if event['message'].startswith('Adapter busy') else errors + 1
+                    if errors >= MAX_ERRORS:
+                        emit({'type': 'error', 'message': 'Too many consecutive scan errors. Scanning stopped.'})
+                        return 1
+                    next_scan = time.monotonic() + ERROR_DELAY
+                else:
+                    errors = 0
+                    next_scan = time.monotonic() + (LOCKED_DELAY if frequency else DISCOVERY_DELAY)
     except (ValueError, OSError) as exc:
         if not isinstance(exc, BrokenPipeError):
             try:

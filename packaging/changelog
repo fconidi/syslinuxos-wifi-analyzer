@@ -1,3 +1,31 @@
+syslinuxos-wifi-analyzer (2026.11.1) tirreno; urgency=medium
+
+  * Decode non-ASCII SSIDs as iw escapes them, and treat an all-zero SSID as
+    hidden, so names such as "Caffè" display and filter correctly.
+  * Show the helper's own error instead of a generic authorization message,
+    distinguish a cancelled authorization from a missing polkit agent, and let
+    Stop cancel a pending authorization dialog.
+  * Closing the window no longer freezes it while a scan finishes; the adapter
+    list is read in the background and a missing iw is reported as such.
+  * Update the network table in place, keeping the selected cell, scroll
+    position and sort order; a radio that changes channel replaces its old row.
+  * Add a scan-in-progress indicator and announce errors to assistive
+    technology; give the signal graphs a text description and keyboard focus.
+  * Fix the clashing keyboard shortcuts in English, Italian, French and German.
+  * Make the history graph scroll with time and follow the chosen sensitivity,
+    scale the gauge with the system font, and mute beeps at volume zero.
+  * Use the theme's colours for titles and stale rows.
+  * Limit a scan to the 500 strongest radios and the amount of text read from
+    iw, give up after ten consecutive scan errors, scan all channels about once
+    a second, and ignore malformed deeply nested commands.
+  * Label OWE, WPA3 and WPA2 networks precisely, show 6 GHz channels as such
+    and include the 4.9 GHz band.
+  * Remove bytecode left by the privileged helper when the package is removed.
+  * Singular status line for a single radio; the manual page names the English
+    controls.
+
+ -- Franco Conidi <fconidi@gmail.com>  Sat, 07 Nov 2026 15:00:00 +0100
+
 syslinuxos-wifi-analyzer (2026.10.3) tirreno; urgency=medium
 
   * Correct the application name to SysLinuxOS Wifi Analyzer.

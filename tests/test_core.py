@@ -39,6 +39,35 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(nets[0].security, 'WPA2/3')
         self.assertEqual(nets[2].ssid, '')
 
+    def test_ssid_escapes_are_decoded_and_unset_names_are_hidden(self):
+        from core import decode_ssid
+        self.assertEqual(decode_ssid(r'Caff\xc3\xa8'), 'Caffè')
+        self.assertEqual(decode_ssid(r'a\\b'), 'a\\b')
+        self.assertEqual(decode_ssid(r'\x00\x00\x00'), '')
+        self.assertEqual(decode_ssid(r'bad\x1b[31m'), 'bad?[31m')
+        self.assertEqual(decode_ssid(r'\xff\xfe'), '\ufffd\ufffd')
+        self.assertEqual(len(decode_ssid('x' * 300)), 128)
+        nets = parse_iw('BSS aa:bb:cc:dd:ee:09(on wlan0)\n\tfreq: 2412\n\tsignal: -50.00 dBm\n'
+                        '\tSSID: Caff\\xc3\\xa8\n')
+        self.assertEqual(nets[0].ssid, 'Caffè')
+
+    def test_security_labels_follow_the_authentication_suites(self):
+        def security(*lines):
+            text = 'BSS aa:bb:cc:dd:ee:09(on wlan0)\n\tfreq: 5180\n\tsignal: -50.00 dBm\n' + '\n'.join(lines) + '\n'
+            return parse_iw(text)[0].security
+        self.assertEqual(security('\tRSN:', '\t\t * Authentication suites: PSK'), 'WPA2')
+        self.assertEqual(security('\tRSN:', '\t\t * Authentication suites: SAE'), 'WPA3')
+        self.assertEqual(security('\tRSN:', '\t\t * Authentication suites: PSK SAE'), 'WPA2/3')
+        self.assertEqual(security('\tRSN:', '\t\t * Authentication suites: OWE'), 'OWE')
+        self.assertEqual(security('\tWPA:', '\t\t * Authentication suites: PSK'), 'WPA')
+        self.assertEqual(security('\tRSN:', '\t\t * Authentication suites: PSK', '\tWPA:',
+                                  '\t\t * Authentication suites: PSK'), 'WPA2')
+
+    def test_more_bands_and_dfs_channels(self):
+        for freq, channel in [(4900, 180), (5260, 52), (5500, 100), (5720, 144), (5935, 2),
+                              (2467, 12), (2472, 13), (2300, 0)]:
+            self.assertEqual(channel_for_frequency(freq), channel, freq)
+
     def test_frequency_channels_include_special_cases(self):
         for freq, channel in [(2412, 1), (2484, 14), (5180, 36), (5935, 2), (5955, 1), (7115, 233)]:
             self.assertEqual(channel_for_frequency(freq), channel)

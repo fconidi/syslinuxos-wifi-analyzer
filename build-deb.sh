@@ -26,6 +26,15 @@ install -Dm755 "$WORKDIR/packaging/launcher" "$PACKAGE_DIR/usr/bin/$PKG_NAME"
 install -Dm644 "$WORKDIR/packaging/$PKG_NAME.desktop" "$PACKAGE_DIR/usr/share/applications/$PKG_NAME.desktop"
 install -Dm644 "$WORKDIR/packaging/$PKG_NAME.menu" "$PACKAGE_DIR/etc/xdg/menus/applications-merged/$PKG_NAME.menu"
 echo "/etc/xdg/menus/applications-merged/$PKG_NAME.menu" > "$PACKAGE_DIR/DEBIAN/conffiles"
+cat > "$PACKAGE_DIR/DEBIAN/postrm" <<'EOF'
+#!/bin/sh
+set -e
+case "$1" in
+    remove|purge) rm -rf /usr/lib/syslinuxos-wifi-analyzer/__pycache__ ;;
+esac
+exit 0
+EOF
+chmod 755 "$PACKAGE_DIR/DEBIAN/postrm"
 install -Dm644 "$WORKDIR/packaging/$PKG_NAME.svg" "$PACKAGE_DIR/usr/share/icons/hicolor/scalable/apps/$PKG_NAME.svg"
 install -Dm644 "$WORKDIR/packaging/com.syslinuxos.wifi-analyzer.scan.policy" \
     "$PACKAGE_DIR/usr/share/polkit-1/actions/com.syslinuxos.wifi-analyzer.scan.policy"

@@ -13,6 +13,15 @@ from core import SignalTracker
 from widgets import SignalGauge, SignalHistory
 
 
+def announce(widget):
+    """Raise an accessibility alert where this Qt build supports it."""
+    try:
+        from PyQt5.QtGui import QAccessible, QAccessibleEvent
+        QAccessible.updateAccessibility(QAccessibleEvent(widget, QAccessible.Alert))
+    except (ImportError, AttributeError):
+        pass
+
+
 def plain_label(text=''):
     label = QLabel(text)
     label.setTextFormat(Qt.PlainText)
@@ -31,7 +40,7 @@ class SignalDialog(QDialog):
         self.setMinimumWidth(390)
         layout = QVBoxLayout(self)
         title = plain_label(tr('SIGNAL') + (' · ' + tr('DEMO') if demo else ''))
-        title.setStyleSheet('font-size: 19px; font-weight: bold; color: #16618a;')
+        title.setStyleSheet('font-size: 19px; font-weight: bold; color: palette(highlight);')
         layout.addWidget(title)
         layout.addWidget(plain_label(network.ssid or tr('Hidden SSID')))
         identity = plain_label(tr('{bssid}  ·  {frequency} MHz  ·  channel {channel}',
@@ -42,9 +51,11 @@ class SignalDialog(QDialog):
         layout.addWidget(self.gauge, 3)
         self.state = plain_label(tr('Waiting for a new measurement on the target channel…'))
         self.state.setStyleSheet('font-size: 16px; font-weight: bold;')
+        self.state.setTextInteractionFlags(Qt.TextSelectableByKeyboard | Qt.TextSelectableByMouse)
         layout.addWidget(self.state)
         row = QHBoxLayout()
         self.details = plain_label(tr('Current: —   ·   Peak: —'))
+        self.details.setTextInteractionFlags(Qt.TextSelectableByKeyboard | Qt.TextSelectableByMouse)
         row.addWidget(self.details, 1)
         self.reset = QPushButton(tr('Reset peak'))
         self.reset.clicked.connect(self.tracker.reset_peak)
@@ -91,6 +102,7 @@ class SignalDialog(QDialog):
         self.timer.setInterval(100)
         self.timer.timeout.connect(self.refresh)
         self.timer.start()
+        self.audio.setFocus()
 
     def observe(self, networks, now, frequency):
         if frequency != self.network.frequency:
@@ -107,6 +119,7 @@ class SignalDialog(QDialog):
         self.beeper.stop()
         self.state.setText(message)
         self.refresh()
+        announce(self.state)
 
     def refresh(self):
         now = time.monotonic()
@@ -123,7 +136,12 @@ class SignalDialog(QDialog):
         raw = f'{self.tracker.raw:.1f} dBm' if fresh else '—'
         peak = '—' if self.tracker.peak is None else f'{self.tracker.peak:.1f} dBm'
         self.details.setText(tr('Current: {raw}   ·   Peak: {peak}', raw=raw, peak=peak))
+        summary = self.state.text() + '. ' + self.details.text()
+        self.gauge.setAccessibleDescription(summary)
+        self.history.setAccessibleDescription(summary)
         self.history.points = list(self.tracker.history)
+        self.history.now = now
+        self.history.weak, self.history.strong = weak, strong
         self.history.update()
 
     def done(self, result):

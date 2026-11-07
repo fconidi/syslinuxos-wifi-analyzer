@@ -58,7 +58,7 @@ class Beeper(QObject):
             self.timer.setInterval(interval)
 
     def play(self):
-        if self.sound is not None and self.sound.status() == QSoundEffect.Ready:
+        if self.volume > 0 and self.sound is not None and self.sound.status() == QSoundEffect.Ready:
             self.sound.play()
 
     def test(self):
