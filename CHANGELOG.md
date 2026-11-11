@@ -3,6 +3,13 @@
 All notable changes to this project are documented in this file.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [2026.11.3] - 2026-11-11
+
+### Changed
+- The application logo is shown in the window header.
+- Older measurements stay readable: they are dimmed less and only after twenty
+  seconds instead of four.
+
 ## [2026.11.2] - 2026-11-11
 
 ### Fixed

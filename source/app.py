@@ -8,7 +8,7 @@ import sys
 import time
 
 from PyQt5.QtCore import QProcess, QProcessEnvironment, Qt, QTimer
-from PyQt5.QtGui import QBrush, QIcon, QPalette
+from PyQt5.QtGui import QBrush, QColor, QIcon, QPalette
 from PyQt5.QtWidgets import (QAbstractItemView, QApplication, QComboBox, QHBoxLayout,
                              QHeaderView, QLabel, QLineEdit, QMainWindow, QMessageBox,
                              QProgressBar, QPushButton, QTableWidget, QTableWidgetItem,
@@ -51,9 +51,17 @@ class MainWindow(QMainWindow):
         layout = QVBoxLayout(root)
         layout.setContentsMargins(20, 20, 20, 16)
         layout.setSpacing(12)
+        heading = QHBoxLayout()
+        logo = QLabel()
+        logo.setPixmap(self.windowIcon().pixmap(56, 56))
+        logo.setAccessibleName(APP_NAME)
+        heading.addWidget(logo)
         title = plain_label(APP_NAME)
         title.setStyleSheet('font-size: 24px; font-weight: bold; color: palette(highlight);')
-        layout.addWidget(title)
+        title.setWordWrap(False)
+        heading.addWidget(title)
+        heading.addStretch()
+        layout.addLayout(heading)
         layout.addWidget(plain_label(tr('Find hidden access points · select a radio and open Signal')))
         if demo:
             banner = plain_label(tr('DEMO · simulated data, no real WiFi scanning'))
@@ -251,6 +259,14 @@ class MainWindow(QMainWindow):
         table.blockSignals(False)
         self.selection_changed()
 
+    def stale_brush(self):
+        # Old measurements are dimmed, but stay readable: 75% text colour over the background.
+        palette = self.table.palette()
+        text, base = palette.color(QPalette.Text), palette.color(QPalette.Base)
+        mix = lambda a, b: round(a * 0.75 + b * 0.25)
+        return QBrush(QColor(mix(text.red(), base.red()), mix(text.green(), base.green()),
+                             mix(text.blue(), base.blue())))
+
     def fill_row(self, row, net, age):
         channel = net.channel
         channel_text = '—' if not channel else (tr('{channel} (6 GHz)', channel=channel)
@@ -259,7 +275,7 @@ class MainWindow(QMainWindow):
                  (str(net.frequency), net.frequency), (channel_text, channel),
                  (str(net.signal), net.signal), (tr(net.security), None),
                  (tr('{age:.0f} s ago', age=age), None)]
-        stale = self.table.palette().brush(QPalette.Disabled, QPalette.Text) if age > 4 else QBrush()
+        stale = self.stale_brush() if age > 20 else QBrush()
         for column, (text, data) in enumerate(cells):
             item = self.table.item(row, column)
             if item is None:

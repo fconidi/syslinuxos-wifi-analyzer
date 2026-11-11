@@ -222,6 +222,18 @@ class GuiTests(unittest.TestCase):
                 finally:
                     window.close()
 
+    def test_old_rows_stay_readable(self):
+        window = MainWindow(True)
+        try:
+            palette = window.table.palette()
+            base = palette.color(palette.Base)
+            dim = window.stale_brush().color()
+            lum = lambda c: 0.2126 * (c.red() / 255) ** 2.2 + 0.7152 * (c.green() / 255) ** 2.2 + 0.0722 * (c.blue() / 255) ** 2.2
+            hi, lo = sorted((lum(dim), lum(base)), reverse=True)
+            self.assertGreaterEqual((hi + 0.05) / (lo + 0.05), 4.5)
+        finally:
+            window.close()
+
 
 class ControllerMessageTests(unittest.TestCase):
     @classmethod

@@ -8,7 +8,7 @@
 
 Desktop application for locating WiFi access points hidden above suspended
 ceilings or in other concealed areas, using received signal strength and audible
-guidance. Version `2026.11.2`, for SysLinuxOS 13 / Debian 13. English is the
+guidance. Version `2026.11.3`, for SysLinuxOS 13 / Debian 13. English is the
 default language, with automatic support for Italian, French, German and Spanish.
 
 Full walkthrough: [installation and usage guide](https://syslinuxos.com/syslinuxos-wifi-analyzer-installation-usage-guide/).
@@ -25,7 +25,7 @@ sudo apt install syslinuxos-wifi-analyzer
 Or download the `.deb` from [GitHub Releases](https://github.com/fconidi/syslinuxos-wifi-analyzer/releases):
 
 ```bash
-sudo apt install ./syslinuxos-wifi-analyzer_2026.11.2_all.deb
+sudo apt install ./syslinuxos-wifi-analyzer_2026.11.3_all.deb
 syslinuxos-wifi-analyzer
 ```
 
@@ -133,7 +133,7 @@ on WiFi discovery and does not include Sparrow's Bluetooth, SDR or DroneID featu
 
 Applicazione desktop per trovare gli access point nascosti, ad esempio sopra un
 controsoffitto, usando il segnale ricevuto e una guida sonora. Versione
-`2026.11.2`, per SysLinuxOS 13 / Debian 13. Inglese predefinito con rilevamento
+`2026.11.3`, per SysLinuxOS 13 / Debian 13. Inglese predefinito con rilevamento
 automatico di italiano, francese, tedesco e spagnolo.
 
 Guida completa: [installazione e utilizzo](https://francoconidi.it/syslinuxos-wifi-analyzer-guida-installazione-utilizzo/).
@@ -150,7 +150,7 @@ sudo apt install syslinuxos-wifi-analyzer
 Oppure scarica il `.deb` dalle [release GitHub](https://github.com/fconidi/syslinuxos-wifi-analyzer/releases):
 
 ```bash
-sudo apt install ./syslinuxos-wifi-analyzer_2026.11.2_all.deb
+sudo apt install ./syslinuxos-wifi-analyzer_2026.11.3_all.deb
 syslinuxos-wifi-analyzer
 ```
 
