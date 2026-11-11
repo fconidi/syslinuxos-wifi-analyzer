@@ -9,7 +9,7 @@ from unittest.mock import Mock, patch
 os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'source'))
 
-from PyQt5.QtCore import QProcess, Qt
+from PyQt5.QtCore import QCoreApplication, QEvent, QProcess, Qt
 from PyQt5.QtWidgets import QApplication
 from app import MainWindow
 from controller import ScanController
@@ -198,6 +198,27 @@ class GuiTests(unittest.TestCase):
                         time.sleep(0.01)
                     self.assertEqual(window.interface.currentText(), 'wlan9')
                     self.assertTrue(window.scan_button.isEnabled())
+                finally:
+                    window.close()
+
+    def test_lookup_timeout_after_the_lookup_ended_is_harmless(self):
+        # The 5 s kill timer fires after iw finished and its QProcess was deleted.
+        timers = []
+        with tempfile.TemporaryDirectory() as directory:
+            fake = Path(directory, 'iw')
+            fake.write_text('#!/bin/sh\nprintf "phy#0\\n\\tInterface wlan9\\n"\n')
+            fake.chmod(0o755)
+            with patch('app.IW', str(fake)), patch('app.QTimer.singleShot', lambda ms, call: timers.append(call)):
+                window = MainWindow(False)
+                try:
+                    deadline = time.monotonic() + 5
+                    while window.interface.count() == 0 and time.monotonic() < deadline:
+                        self.app.processEvents()
+                        time.sleep(0.01)
+                    QCoreApplication.sendPostedEvents(None, QEvent.DeferredDelete)
+                    self.assertTrue(timers)
+                    for call in timers:
+                        call()  # must not touch the deleted process
                 finally:
                     window.close()
 

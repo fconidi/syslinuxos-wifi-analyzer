@@ -142,7 +142,8 @@ class MainWindow(QMainWindow):
             process.setProcessChannelMode(QProcess.SeparateChannels)
             process.finished.connect(lambda *_: self.lookup_done(process, previous, initial))
             process.errorOccurred.connect(lambda *_: self.lookup_done(process, previous, initial))
-            QTimer.singleShot(5000, lambda: process.kill() if process.state() != QProcess.NotRunning else None)
+            # The process is deleted once the lookup ends: only touch it while it is still the active one.
+            QTimer.singleShot(5000, lambda: self.lookup is process and process.state() != QProcess.NotRunning and process.kill())
             process.start(IW, ['dev'])
 
     def lookup_done(self, process, previous, initial):

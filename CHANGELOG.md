@@ -3,6 +3,12 @@
 All notable changes to this project are documented in this file.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [2026.11.2] - 2026-11-11
+
+### Fixed
+- Crash a few seconds after start: the timer that stops a stuck adapter lookup
+  touched the lookup process after it had already finished and been deleted.
+
 ## [2026.11.1] - 2026-11-07
 
 ### Fixed
